@@ -11,20 +11,21 @@ from app.models.lead import Lead
 from app.models.user import User
 from app.schemas.lead import LeadCreate, LeadResponse, LeadStatusUpdate
 from app.api.deps import get_current_user
+from app.services.email import send_lead_notification
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
 
 
 @router.post("/", response_model=LeadResponse, status_code=201)
 def create_lead(lead_in: LeadCreate, db: Session = Depends(get_db)):
-    """
-    Public endpoint - hit by your contact form on the frontend.
-    Later: this is also where you'll trigger a notification email to yourself.
-    """
+    """Public endpoint - hit by your contact form on the frontend."""
     lead = Lead(**lead_in.model_dump())
     db.add(lead)
     db.commit()
     db.refresh(lead)
+
+    send_lead_notification(lead)  # best-effort - won't break this request if it fails
+
     return lead
 
 
