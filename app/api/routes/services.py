@@ -32,3 +32,29 @@ def create_service(service_in: ServiceCreate, db: Session = Depends(get_db), cur
     db.commit()
     db.refresh(service)
     return service
+
+
+@router.put("/{slug}", response_model=ServiceResponse)
+def update_service(slug: str, service_in: ServiceCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - replaces all fields of an existing service."""
+    service = db.query(Service).filter(Service.slug == slug).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    for field, value in service_in.model_dump().items():
+        setattr(service, field, value)
+
+    db.commit()
+    db.refresh(service)
+    return service
+
+
+@router.delete("/{slug}", status_code=204)
+def delete_service(slug: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - permanently removes a service."""
+    service = db.query(Service).filter(Service.slug == slug).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    db.delete(service)
+    db.commit()

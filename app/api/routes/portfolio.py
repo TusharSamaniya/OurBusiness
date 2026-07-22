@@ -32,3 +32,29 @@ def create_portfolio_item(item_in: PortfolioItemCreate, db: Session = Depends(ge
     db.commit()
     db.refresh(item)
     return item
+
+
+@router.put("/{slug}", response_model=PortfolioItemResponse)
+def update_portfolio_item(slug: str, item_in: PortfolioItemCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - replaces all fields of an existing portfolio item."""
+    item = db.query(PortfolioItem).filter(PortfolioItem.slug == slug).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Portfolio item not found")
+
+    for field, value in item_in.model_dump().items():
+        setattr(item, field, value)
+
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.delete("/{slug}", status_code=204)
+def delete_portfolio_item(slug: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - permanently removes a portfolio item."""
+    item = db.query(PortfolioItem).filter(PortfolioItem.slug == slug).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Portfolio item not found")
+
+    db.delete(item)
+    db.commit()

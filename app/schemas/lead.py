@@ -16,6 +16,11 @@ class LeadCreate(BaseModel):
     message: str
 
 
+class LeadStatusUpdate(BaseModel):
+    """Admin updates this to track follow-up progress on an inquiry."""
+    status: str  # expected: "new", "contacted", "converted", or "closed"
+
+
 class LeadResponse(BaseModel):
     """What we send back after creating/reading a lead."""
     id: int

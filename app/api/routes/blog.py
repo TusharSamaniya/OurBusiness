@@ -37,3 +37,29 @@ def create_post(post_in: BlogPostCreate, db: Session = Depends(get_db), current_
     db.commit()
     db.refresh(post)
     return post
+
+
+@router.put("/{slug}", response_model=BlogPostResponse)
+def update_post(slug: str, post_in: BlogPostCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - replaces all fields of an existing post."""
+    post = db.query(BlogPost).filter(BlogPost.slug == slug).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    for field, value in post_in.model_dump().items():
+        setattr(post, field, value)
+
+    db.commit()
+    db.refresh(post)
+    return post
+
+
+@router.delete("/{slug}", status_code=204)
+def delete_post(slug: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - permanently removes a post."""
+    post = db.query(BlogPost).filter(BlogPost.slug == slug).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    db.delete(post)
+    db.commit()
