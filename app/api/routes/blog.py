@@ -3,7 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.blog_post import BlogPost
+from app.models.user import User
 from app.schemas.blog_post import BlogPostCreate, BlogPostResponse
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/api/blog", tags=["blog"])
 
@@ -28,8 +30,8 @@ def get_post(slug: str, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=BlogPostResponse, status_code=201)
-def create_post(post_in: BlogPostCreate, db: Session = Depends(get_db)):
-    """Admin-only once auth is added (Step 3)."""
+def create_post(post_in: BlogPostCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - requires a valid login token."""
     post = BlogPost(**post_in.model_dump())
     db.add(post)
     db.commit()

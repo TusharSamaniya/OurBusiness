@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.lead import Lead
+from app.models.user import User
 from app.schemas.lead import LeadCreate, LeadResponse
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
 
@@ -27,8 +29,6 @@ def create_lead(lead_in: LeadCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[LeadResponse])
-def list_leads(db: Session = Depends(get_db)):
-    """
-    Admin-only endpoint (auth to be added in Step 3) - view all inquiries.
-    """
+def list_leads(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - requires a valid login token."""
     return db.query(Lead).order_by(Lead.created_at.desc()).all()

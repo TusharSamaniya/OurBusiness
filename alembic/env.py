@@ -14,7 +14,7 @@ from app.core.config import settings  # noqa: E402
 from app.db.database import Base  # noqa: E402
 # Import every model here so Base.metadata knows about all tables -
 # autogenerate can only detect tables that have been imported.
-from app.models import lead, service, portfolio, blog_post, newsletter  # noqa: E402,F401
+from app.models import lead, service, portfolio, blog_post, newsletter, user  # noqa: E402,F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

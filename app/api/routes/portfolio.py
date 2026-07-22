@@ -3,7 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.portfolio import PortfolioItem
+from app.models.user import User
 from app.schemas.portfolio import PortfolioItemCreate, PortfolioItemResponse
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 
@@ -23,8 +25,8 @@ def get_portfolio_item(slug: str, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=PortfolioItemResponse, status_code=201)
-def create_portfolio_item(item_in: PortfolioItemCreate, db: Session = Depends(get_db)):
-    """Admin-only once auth is added (Step 3)."""
+def create_portfolio_item(item_in: PortfolioItemCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Admin-only - requires a valid login token."""
     item = PortfolioItem(**item_in.model_dump())
     db.add(item)
     db.commit()
