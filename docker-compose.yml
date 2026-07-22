@@ -8,7 +8,9 @@ services:
       POSTGRES_PASSWORD: agency_pass
       POSTGRES_DB: agency_db
     ports:
-      - "5432:5432"
+      # Host 5433 -> container 5432, so this doesn't clash with the
+      # Postgres you already have installed locally on 5432.
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -17,12 +19,32 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build: .
+    container_name: agency_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Inside Docker's network, containers reach each other by service
+      # name, not localhost - "db" is the db service above, always on its
+      # internal port 5432 regardless of the host-side 5433 mapping.
+      DATABASE_URL: postgresql://agency_user:agency_pass@db:5432/agency_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: agency_pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@agency.local
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
