@@ -3,7 +3,7 @@ Routes for lead/contact form submissions.
 This is the single most important endpoint in your whole app - it's how
 leads reach you. Everything else can wait; this can't.
 """
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -12,13 +12,15 @@ from app.models.user import User
 from app.schemas.lead import LeadCreate, LeadResponse, LeadStatusUpdate
 from app.api.deps import get_current_user
 from app.services.email import send_lead_notification
+from app.core.limiter import limiter
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
 
 
 @router.post("/", response_model=LeadResponse, status_code=201)
-def create_lead(lead_in: LeadCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    """Public endpoint - hit by your contact form on the frontend."""
+@limiter.limit("5/minute")
+def create_lead(request: Request, lead_in: LeadCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """Public endpoint - hit by your contact form on the frontend. Rate-limited to prevent spam."""
     lead = Lead(**lead_in.model_dump())
     db.add(lead)
     db.commit()
