@@ -10,7 +10,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.config import settings
 from app.core.limiter import limiter
-from app.api.routes import leads, services, portfolio, blog, newsletter, auth, upload
+from app.api.routes import leads, services, portfolio, blog, newsletter, auth, upload, chatbot
 
 # Table creation is now handled by Alembic migrations (see alembic/ folder
 # and README) instead of Base.metadata.create_all(). Run `alembic upgrade
@@ -37,6 +37,7 @@ app.include_router(blog.router)
 app.include_router(newsletter.router)
 app.include_router(auth.router)
 app.include_router(upload.router)
+app.include_router(chatbot.router)
 
 
 @app.get("/health")
