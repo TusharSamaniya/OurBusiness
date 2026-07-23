@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = ""
     EMAIL_TO: str = ""  # your inbox - where lead notifications get sent
 
+    CLOUDINARY_CLOUD_NAME: str = ""
+    CLOUDINARY_API_KEY: str = ""
+    CLOUDINARY_API_SECRET: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @property

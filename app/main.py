@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.routes import leads, services, portfolio, blog, newsletter, auth
+from app.api.routes import leads, services, portfolio, blog, newsletter, auth, upload
 
 # Table creation is now handled by Alembic migrations (see alembic/ folder
 # and README) instead of Base.metadata.create_all(). Run `alembic upgrade
@@ -28,6 +28,7 @@ app.include_router(portfolio.router)
 app.include_router(blog.router)
 app.include_router(newsletter.router)
 app.include_router(auth.router)
+app.include_router(upload.router)
 
 
 @app.get("/health")
