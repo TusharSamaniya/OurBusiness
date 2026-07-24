@@ -1,5 +1,7 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+from app.core.sanitize import sanitize_plain_text, sanitize_rich_text
 
 
 class ServiceCreate(BaseModel):
@@ -8,6 +10,16 @@ class ServiceCreate(BaseModel):
     short_description: str
     description: str | None = None
     icon: str | None = None
+
+    @field_validator("title", "slug", "short_description")
+    @classmethod
+    def clean_plain_fields(cls, v: str) -> str:
+        return sanitize_plain_text(v)
+
+    @field_validator("description")
+    @classmethod
+    def clean_description(cls, v: str | None) -> str | None:
+        return sanitize_rich_text(v) if v else v
 
 
 class ServiceResponse(BaseModel):
